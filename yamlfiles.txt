@@ -1,0 +1,126 @@
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/aws/deploy.yaml
+
+kubectl apply -f https://raw.githubusercontent.com/cornellanthony/nlb-nginxIngress-eks/master/apple.yaml
+kubectl apply -f https://raw.githubusercontent.com/cornellanthony/nlb-nginxIngress-eks/master/banana.yaml
+
+kubectl create -f https://raw.githubusercontent.com/cornellanthony/nlb-nginxIngress-eks/master/example-ingress.yaml
+
+
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+#    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: anthonycornell.com
+    http:
+      paths:
+        - path: /apple
+          backend:
+            serviceName: apple-service
+            servicePort: 5678
+        - path: /banana
+          backend:
+            serviceName: banana-service
+            servicePort: 5678
+
+
+
+kind: Pod
+apiVersion: v1
+metadata:
+  name: pet-app
+  labels:
+    app: pet
+spec:
+  containers:
+    - name: pet-app
+      image: hashicorp/http-echo
+      args:
+        - "-text=pet"
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: pet-service
+spec:
+  selector:
+    app: pet
+  ports:
+    - port: 5678 # Default port for image
+
+
+
+
+
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scart-app
+  namespace: scart
+spec:
+  selector:
+    matchLabels:
+      app: scart-app
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: scart-app
+    spec:
+      containers:
+      - name: scart-app
+        image: 811847782524.dkr.ecr.ap-southeast-1.amazonaws.com/shoppingcart:3
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app:  scart-app-svc
+  name:  scart-app-svc
+  namespace:  scart
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  selector:
+    app:  scart-app
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+#    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: nginx.kknr.site
+    http:
+      paths:
+        - path: /shoppingcart
+          backend:
+            serviceName: scart-app-svc
+            servicePort: 8080
+
+
+
