@@ -1,0 +1,24 @@
+---
+- name: install tomcat server
+  hosts: all
+  become: true
+#prerequisite of jenkins is java
+  tasks:
+  - name: install java
+    yum:
+      name: java
+      state: latest
+#downloading the apache-tomcat from out side to using url
+  - name: download tomcat server packages
+    get_url:
+      url: https://mirror.koddos.net/apache/tomcat/tomcat-8/v8.5.61/bin/apache-tomcat-8.5.61.tar.gz
+      dest: /usr/local
+#unzip the apache-tomcat file
+  - name: extract tomcat packages
+    unarchive:
+      src: /usr/local/apache-tomcat-8.5.61.tar.gz
+      dest: /usr/local
+      remote_src: yes
+#starting the tomcat service using the tomcat path
+  - name: start tomcat services
+    shell: /usr/local/apache-tomcat-8.5.61/bin/startup.sh

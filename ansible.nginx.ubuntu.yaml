@@ -1,0 +1,15 @@
+---
+- hosts: nginx
+  tasks:
+    - name: install nginx is the latest version
+      apt:
+        name: nginx
+        state: latest
+    - name: start nginx service
+      service:
+        name: nginx
+        state: started
+    - name: enable apache service
+      service:
+        name: nginx
+        enabled: True
